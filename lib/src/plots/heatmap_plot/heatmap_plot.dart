@@ -1,14 +1,16 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pretty_charts/pretty_charts.dart';
 import 'package:pretty_charts/src/axes/plot_framework.dart';
+import 'package:pretty_charts/src/plots/heatmap_plot/heatmap_plot_data.dart';
 import 'package:pretty_charts/src/shared/chart_viewer.dart';
 import 'package:pretty_charts/src/shared/color_maps/color_map.dart';
 
-class ScatterPlot extends StatefulWidget {
-  const ScatterPlot({
+class HeatmapPlot extends StatefulWidget {
+  const HeatmapPlot({
     super.key,
     required this.data,
     this.colorMap,
@@ -17,17 +19,17 @@ class ScatterPlot extends StatefulWidget {
     required this.axes,
   });
 
-  final List<ScatterPlotData> data;
+  final List<HeatmapPlotData> data;
   final Duration animationDuration;
   final Curve animationCurve;
   final ColorMap? colorMap;
   final CartesianAxes axes;
 
   @override
-  State<ScatterPlot> createState() => _ScatterPlotState();
+  State<HeatmapPlot> createState() => _HeatmapPlotState();
 }
 
-class _ScatterPlotState extends State<ScatterPlot>
+class _HeatmapPlotState extends State<HeatmapPlot>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _progressAnimation;
@@ -43,8 +45,8 @@ class _ScatterPlotState extends State<ScatterPlot>
       vsync: this,
       duration: widget.animationDuration,
     )..addListener(() {
-        setState(() {});
-      });
+      setState(() {});
+    });
 
     _progressAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
@@ -76,7 +78,7 @@ class _ScatterPlotState extends State<ScatterPlot>
         builder: (context, constraints) => ClipRect(
           child: CustomPaint(
             size: Size(constraints.maxWidth, constraints.maxHeight),
-            painter: ScatterPlotPainter(
+            painter: HeatmapPlotPainter(
               scaleFactor: _scaleFactor,
               animationProgress: _progressAnimation.value,
               offset: _offset,
@@ -96,8 +98,8 @@ class _ScatterPlotState extends State<ScatterPlot>
   }
 }
 
-class ScatterPlotPainter extends CustomPainter {
-  ScatterPlotPainter({
+class HeatmapPlotPainter extends CustomPainter {
+  HeatmapPlotPainter({
     super.repaint,
     required this.animationProgress,
     required this.scaleFactor,
@@ -109,7 +111,7 @@ class ScatterPlotPainter extends CustomPainter {
 
   final double scaleFactor;
   final Offset offset;
-  final List<ScatterPlotData> data;
+  final List<HeatmapPlotData> data;
   final ColorMap colorMap;
   final CartesianAxes axes;
 
@@ -129,20 +131,21 @@ class ScatterPlotPainter extends CustomPainter {
     final plotOrigin = axesOrigin + const Offset(axesPadding, -axesPadding);
 
     final xAxesRange =
-        axes.xLimits.translate(-offset.dx / 100).scale(scaleFactor);
+    axes.xLimits.translate(-offset.dx / 100).scale(scaleFactor);
     final yAxesRange =
-        axes.yLimits.translate(offset.dy / 100).scale(scaleFactor);
+    axes.yLimits.translate(offset.dy / 100).scale(scaleFactor);
 
     final axesWidth = size.width - 2 * (internalPadding + axesPadding);
     final axesHeight = size.height - 2 * (internalPadding + axesPadding);
 
     final pointPainter = Paint()
       ..strokeWidth = 12.0 * animationProgress
-      ..strokeCap = StrokeCap.round;
+      ..strokeCap = StrokeCap.square;
 
     for (var (i, d) in data.indexed) {
-      pointPainter.color = colorMap.getColor(i.toDouble()).withValues(alpha: 0.4);
+      pointPainter.color = colorMap.getColor(i.toDouble());//.withValues(alpha: 0.4);
 
+      final List<(double x, double y)> genData = List<(double x, double y)>.filled(min(d.x.length, d.y.length), (0, 0));
       final points = Float32List(d.x.length + d.y.length);
       for (var i = 0; i < d.x.length; i++) {
         points[i * 2] = plotOrigin.dx +
@@ -155,6 +158,8 @@ class ScatterPlotPainter extends CustomPainter {
                 (-offset.dy / 100 + d.y[i]) /
                 yAxesRange.getDiff() *
                 scaleFactor;
+
+        genData[i] = (points[i*2], points[i*2 + 1]);
       }
 
       canvas.clipRect(
@@ -165,7 +170,12 @@ class ScatterPlotPainter extends CustomPainter {
           size.height - 2 * internalPadding,
         ),
       );
-      canvas.drawRawPoints(PointMode.points, points, pointPainter);
+
+      for(int i=0; i < genData.length; ++i) {
+        Rect rect = Rect.fromCenter(center: Offset(genData[i].$1, genData[i].$2), width: 10, height: 10);
+        canvas.drawRect(rect, pointPainter);
+      }
+      // canvas.drawRawPoints(PointMode.points, points, pointPainter);
     }
   }
 

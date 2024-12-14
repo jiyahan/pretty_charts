@@ -27,6 +27,9 @@ export 'src/plots/pie_plot//pie_plot_config.dart' show PiePlotConfig;
 export 'src/plots/scatter_plot/scatter_plot.dart' show ScatterPlot;
 export 'src/plots/scatter_plot/scatter_plot_data.dart' show ScatterPlotData;
 
+export 'src/plots/heatmap_plot/heatmap_plot.dart' show HeatmapPlot;
+export 'src/plots/heatmap_plot/heatmap_plot_data.dart' show HeatmapPlotData;
+
 export 'src/plots/bubble_chart/bubble_chart.dart' show BubbleChart;
 export 'src/plots/bubble_chart/bubble_chart_data.dart' show BubbleChartData;
 

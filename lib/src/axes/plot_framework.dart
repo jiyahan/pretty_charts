@@ -128,7 +128,7 @@ class PlotFrameworkPainter extends CustomPainter {
       final tickPosition = Offset(axesPadding + i * xSpacing, 0);
       canvas.drawLine(
         bottomLeftCorner.translate(tickPosition.dx, tickPosition.dy),
-        bottomLeftCorner.translate(axesPadding + i * xSpacing, -8),
+        bottomLeftCorner.translate(axesPadding + i * xSpacing, 5),
         axesPainter,
       );
 
@@ -162,7 +162,7 @@ class PlotFrameworkPainter extends CustomPainter {
     for (var i = 0; i < yAxesNumberTicks + 1; i++) {
       canvas.drawLine(
         bottomLeftCorner.translate(0, -axesPadding - i * ySpacing),
-        bottomLeftCorner.translate(8, -axesPadding - i * ySpacing),
+        bottomLeftCorner.translate(-5, -axesPadding - i * ySpacing),
         axesPainter,
       );
 
